@@ -9,7 +9,7 @@ import (
 )
 
 func StartWebServer() {
-	repo := repository.NewURLRepository()
+	repo := repository.NewUrlMemoryRepository(make(map[string]string))
 	urlService := service.NewURLService(repo)
 	mux := http.NewServeMux()
 	mux.Handle(`POST /`, handler.NewURLPostHandler(urlService))

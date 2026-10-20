@@ -5,16 +5,16 @@ import (
 	"sync"
 )
 
-type URLRepository struct {
+type URLMemoryRepository struct {
 	mu      sync.RWMutex
 	storage map[string]string
 }
 
-func NewURLRepository() *URLRepository {
-	return &URLRepository{storage: make(map[string]string)}
+func NewUrlMemoryRepository(storage map[string]string) *URLMemoryRepository {
+	return &URLMemoryRepository{storage: storage}
 }
 
-func (h *URLRepository) FindByID(id string) (string, error) {
+func (h *URLMemoryRepository) FindByID(id string) (string, error) {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 	if val, ok := h.storage[id]; ok {
@@ -23,7 +23,7 @@ func (h *URLRepository) FindByID(id string) (string, error) {
 	return "", errors.New("url not found")
 }
 
-func (h *URLRepository) Save(id, url string) error {
+func (h *URLMemoryRepository) Save(id, url string) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	if _, exists := h.storage[id]; exists {
