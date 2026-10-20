@@ -22,6 +22,10 @@ func (h *URLPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	body, err := io.ReadAll(io.LimitReader(r.Body, 2048))
+	if err != nil {
+		http.Error(w, "", http.StatusBadRequest)
+		return
+	}
 	rawURL := string(body)
 
 	parsed, err := url.ParseRequestURI(rawURL)
@@ -30,7 +34,7 @@ func (h *URLPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shorUrl, err := h.urlService.GetShorURL(rawURL)
+	shorURL, err := h.urlService.GetShorURL(rawURL)
 	if err != nil {
 		http.Error(w, "", http.StatusBadRequest)
 		return
@@ -41,6 +45,6 @@ func (h *URLPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	result := (&url.URL{
 		Scheme: "http",
 		Host:   r.Host,
-	}).JoinPath(shorUrl)
+	}).JoinPath(shorURL)
 	_, _ = w.Write([]byte(result.String()))
 }
