@@ -8,21 +8,21 @@ import (
 	"github.com/anatoliin/url-shortener/internal/model"
 )
 
-type UrlService struct {
-	repo model.UrlRepository
+type URLService struct {
+	repo model.URLRepository
 }
 
-func NewUrlService(repo model.UrlRepository) *UrlService {
-	return &UrlService{repo}
+func NewURLService(repo model.URLRepository) *URLService {
+	return &URLService{repo}
 }
 
-func (s *UrlService) GetShorUrl(originalUrl string) (string, error) {
+func (s *URLService) GetShorURL(originalURL string) (string, error) {
 	for range 10 {
 		short, err := GenerateString(8)
 		if err != nil {
 			return "", err
 		}
-		err = s.repo.Save(short, originalUrl)
+		err = s.repo.Save(short, originalURL)
 		if err == nil {
 			return short, nil
 		}
@@ -30,8 +30,8 @@ func (s *UrlService) GetShorUrl(originalUrl string) (string, error) {
 	return "", errors.New("internal error")
 }
 
-func (s *UrlService) GetOriginalUrl(shortUrl string) (string, error) {
-	return s.repo.FindById(shortUrl)
+func (s *URLService) GetOriginalURL(shortURL string) (string, error) {
+	return s.repo.FindByID(shortURL)
 }
 
 const codeAlphabet = "23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"

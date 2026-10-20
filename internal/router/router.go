@@ -9,11 +9,11 @@ import (
 )
 
 func StartWebServer() {
-	repo := repository.NewUrlRepository()
-	urlService := service.NewUrlService(repo)
+	repo := repository.NewURLRepository()
+	urlService := service.NewURLService(repo)
 	mux := http.NewServeMux()
-	mux.Handle(`POST /`, handler.NewUrlPostHandler(urlService))
-	mux.Handle(`GET /{id}`, handler.NewUrlGetHandler(urlService))
+	mux.Handle(`POST /`, handler.NewURLPostHandler(urlService))
+	mux.Handle(`GET /{id}`, handler.NewURLGetHandler(urlService))
 
 	err := http.ListenAndServe(`:8080`, mux)
 	if err != nil {

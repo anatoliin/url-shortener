@@ -1,11 +1,11 @@
 package model
 
-type Url struct {
+type URL struct {
 	ID          string
-	OriginalUrl string
+	OriginalURL string
 }
 
-type UrlRepository interface {
-	FindById(id string) (string, error)
+type URLRepository interface {
+	FindByID(id string) (string, error)
 	Save(id, url string) error
 }

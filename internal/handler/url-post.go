@@ -8,15 +8,15 @@ import (
 	"github.com/anatoliin/url-shortener/internal/service"
 )
 
-type UrlPostHandler struct {
-	urlService *service.UrlService
+type URLPostHandler struct {
+	urlService *service.URLService
 }
 
-func NewUrlPostHandler(service *service.UrlService) *UrlPostHandler {
-	return &UrlPostHandler{service}
+func NewURLPostHandler(service *service.URLService) *URLPostHandler {
+	return &URLPostHandler{service}
 }
 
-func (h *UrlPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *URLPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.Error(w, "", http.StatusBadRequest)
 		return
@@ -30,7 +30,7 @@ func (h *UrlPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shorUrl, err := h.urlService.GetShorUrl(rawURL)
+	shorUrl, err := h.urlService.GetShorURL(rawURL)
 	if err != nil {
 		http.Error(w, "", http.StatusBadRequest)
 		return

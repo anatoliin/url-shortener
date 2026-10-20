@@ -6,22 +6,22 @@ import (
 	"github.com/anatoliin/url-shortener/internal/service"
 )
 
-type UrlGetHandler struct {
-	urlService *service.UrlService
+type URLGetHandler struct {
+	urlService *service.URLService
 }
 
-func NewUrlGetHandler(service *service.UrlService) *UrlGetHandler {
-	return &UrlGetHandler{service}
+func NewURLGetHandler(service *service.URLService) *URLGetHandler {
+	return &URLGetHandler{service}
 }
 
-func (h *UrlGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *URLGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	originalUrl, err := h.urlService.GetOriginalUrl(id)
+	originalURL, err := h.urlService.GetOriginalURL(id)
 	if err != nil {
 		http.Error(w, "", http.StatusBadRequest)
 		return
 	}
-	w.Header().Set("Location", originalUrl)
+	w.Header().Set("Location", originalURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 
 }
