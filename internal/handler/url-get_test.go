@@ -101,7 +101,7 @@ func TestURLGetHandler_ServeHTTP(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, tt.request, nil)
 			request.SetPathValue("id", strings.TrimPrefix(tt.request, "/"))
 			w := httptest.NewRecorder()
-			repo := repository.NewUrlMemoryRepository(tt.storage)
+			repo := repository.NewURLMemoryRepository(tt.storage)
 			urlService := service.NewURLService(repo)
 			h := http.Handler(NewURLGetHandler(urlService))
 			h.ServeHTTP(w, request)

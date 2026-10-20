@@ -10,7 +10,7 @@ type URLMemoryRepository struct {
 	storage map[string]string
 }
 
-func NewUrlMemoryRepository(storage map[string]string) *URLMemoryRepository {
+func NewURLMemoryRepository(storage map[string]string) *URLMemoryRepository {
 	return &URLMemoryRepository{storage: storage}
 }
 
