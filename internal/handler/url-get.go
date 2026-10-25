@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/anatoliin/url-shortener/internal/service"
+	"github.com/go-chi/chi/v5"
 )
 
 type URLGetHandler struct {
@@ -15,7 +16,7 @@ func NewURLGetHandler(service *service.URLService) *URLGetHandler {
 }
 
 func (h *URLGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
+	id := chi.URLParam(r, "id")
 	originalURL, err := h.urlService.GetOriginalURL(id)
 	if err != nil {
 		http.Error(w, "", http.StatusBadRequest)

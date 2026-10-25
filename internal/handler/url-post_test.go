@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/anatoliin/url-shortener/internal/repository"
 	"github.com/anatoliin/url-shortener/internal/service"
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -71,7 +71,7 @@ func TestURLPostHandler_ServeHTTP(t *testing.T) {
 			request: "/foo",
 			body:    "http://google.com",
 			want: want{
-				statusCode:   400,
+				statusCode:   404,
 				contentType:  "",
 				checkContent: false,
 			},
@@ -107,30 +107,28 @@ func TestURLPostHandler_ServeHTTP(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			request := httptest.NewRequest(http.MethodPost, tt.request, strings.NewReader(tt.body))
-			request.Host = "localhost:8080"
-			w := httptest.NewRecorder()
 			repo := repository.NewURLMemoryRepository(make(map[string]string))
 			urlService := service.NewURLService(repo)
-			h := http.Handler(NewURLPostHandler(urlService))
-			h.ServeHTTP(w, request)
+			r := chi.NewRouter()
+			r.Method(http.MethodPost, "/", NewURLPostHandler(urlService))
+			ts := httptest.NewServer(r)
+			defer ts.Close()
 
-			result := w.Result()
-			assert.Equal(t, tt.want.statusCode, result.StatusCode)
-
-			bodyData, err := io.ReadAll(result.Body)
-			require.NoError(t, err)
-			err = result.Body.Close()
-			require.NoError(t, err)
-
+			resp, bodyData := testRequest(t, ts, "POST", tt.request, strings.NewReader(tt.body))
+			assert.Equal(t, tt.want.statusCode, resp.StatusCode)
 			if tt.want.checkContent {
-				assert.Equal(t, tt.want.contentType, result.Header.Get("Content-Type"))
-				parsed, err := url.Parse(string(bodyData))
+				assert.Equal(t, tt.want.contentType, resp.Header.Get("Content-Type"))
+				parsed, err := url.Parse(bodyData)
 				require.NoError(t, err)
 				assert.Equal(t, "http", parsed.Scheme)
-				assert.Equal(t, request.Host, parsed.Host)
+
+				tsURL, err := url.Parse(ts.URL)
+				require.NoError(t, err)
+				assert.Equal(t, tsURL.Host, parsed.Host)
+
 				assert.NotEmpty(t, parsed.Path)
 			}
 		})
