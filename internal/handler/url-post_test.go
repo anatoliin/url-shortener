@@ -118,6 +118,7 @@ func TestURLPostHandler_ServeHTTP(t *testing.T) {
 			defer ts.Close()
 
 			resp, bodyData := testRequest(t, ts, "POST", tt.request, strings.NewReader(tt.body))
+			defer resp.Body.Close()
 			assert.Equal(t, tt.want.statusCode, resp.StatusCode)
 			if tt.want.checkContent {
 				assert.Equal(t, tt.want.contentType, resp.Header.Get("Content-Type"))
