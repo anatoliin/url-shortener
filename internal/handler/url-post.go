@@ -9,11 +9,12 @@ import (
 )
 
 type URLPostHandler struct {
-	urlService *service.URLService
+	urlService  *service.URLService
+	redirectURL *url.URL
 }
 
-func NewURLPostHandler(service *service.URLService) *URLPostHandler {
-	return &URLPostHandler{service}
+func NewURLPostHandler(service *service.URLService, redirectAddress *url.URL) *URLPostHandler {
+	return &URLPostHandler{service, redirectAddress}
 }
 
 func (h *URLPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -42,9 +43,6 @@ func (h *URLPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	result := (&url.URL{
-		Scheme: "http",
-		Host:   r.Host,
-	}).JoinPath(shorURL)
+	result := h.redirectURL.JoinPath(shorURL)
 	_, _ = w.Write([]byte(result.String()))
 }
