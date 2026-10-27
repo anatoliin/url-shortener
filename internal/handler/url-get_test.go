@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -107,9 +106,7 @@ func TestURLGetHandler_ServeHTTP(t *testing.T) {
 			defer ts.Close()
 
 			resp, _ := testRequest(t, ts, "GET", tt.request, nil)
-			defer func(Body io.ReadCloser) {
-				_ = Body.Close()
-			}(resp.Body)
+			defer resp.Body.Close()
 
 			assert.Equal(t, tt.want.statusCode, resp.StatusCode)
 			assert.Equal(t, tt.want.location, resp.Header.Get("Location"))

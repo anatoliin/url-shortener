@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -121,9 +120,7 @@ func TestURLPostHandler_ServeHTTP(t *testing.T) {
 			defer ts.Close()
 
 			resp, bodyData := testRequest(t, ts, "POST", tt.request, strings.NewReader(tt.body))
-			defer func(Body io.ReadCloser) {
-				_ = Body.Close()
-			}(resp.Body)
+			defer resp.Body.Close()
 			assert.Equal(t, tt.want.statusCode, resp.StatusCode)
 			if tt.want.checkContent {
 				assert.Equal(t, tt.want.contentType, resp.Header.Get("Content-Type"))
