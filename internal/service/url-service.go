@@ -34,6 +34,7 @@ func (s *URLService) GetOriginalURL(shortURL string) (string, error) {
 	return s.repo.FindByID(shortURL)
 }
 
+// алгоритм генерации от ИИ
 const codeAlphabet = "23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
 
 func GenerateString(length int) (string, error) {
