@@ -105,6 +105,16 @@ func TestURLPostHandler_ServeHTTP(t *testing.T) {
 				checkContent: true,
 			},
 		},
+		{
+			name:    "oversized body test #8",
+			request: "/",
+			body:    "https://example.com/" + strings.Repeat("a", maxBodySize),
+			want: want{
+				statusCode:   400,
+				contentType:  "",
+				checkContent: false,
+			},
+		},
 	}
 
 	redirectURLStr := "https://test.com/short-url"

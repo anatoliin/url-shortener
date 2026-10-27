@@ -7,5 +7,5 @@ import (
 
 func main() {
 	options := config.InitOptions()
-	router.StartWebServer(options.RunAddress, &options.RedirectPrefix)
+	router.StartWebServer(options.RunAddress, options.RedirectPrefix.URL())
 }

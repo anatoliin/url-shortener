@@ -17,13 +17,11 @@ func NewURLPostHandler(service *service.URLService, redirectAddress *url.URL) *U
 	return &URLPostHandler{service, redirectAddress}
 }
 
+const maxBodySize = 2048
+
 func (h *URLPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Error(w, "", http.StatusBadRequest)
-		return
-	}
-	body, err := io.ReadAll(io.LimitReader(r.Body, 2048))
-	if err != nil {
+	body, err := io.ReadAll(io.LimitReader(r.Body, maxBodySize+1))
+	if err != nil || len(body) > maxBodySize {
 		http.Error(w, "", http.StatusBadRequest)
 		return
 	}
