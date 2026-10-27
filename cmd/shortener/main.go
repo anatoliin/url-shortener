@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-	config.InitOptions()
-	router.StartWebServer(config.Options.RunAddress, config.Options.RedirectPrefix)
+	options := config.InitOptions()
+	router.StartWebServer(options.RunAddress, &options.RedirectPrefix)
 }
