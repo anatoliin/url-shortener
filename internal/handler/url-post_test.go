@@ -134,7 +134,7 @@ func TestURLPostHandler_ServeHTTP(t *testing.T) {
 			assert.Equal(t, tt.want.statusCode, resp.StatusCode)
 			if tt.want.checkContent {
 				assert.Equal(t, tt.want.contentType, resp.Header.Get("Content-Type"))
-				assert.True(t, strings.Index(bodyData, redirectURLStr) == 0)
+				assert.True(t, strings.HasPrefix(bodyData, redirectURLStr))
 			}
 		})
 	}

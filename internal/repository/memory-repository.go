@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"errors"
 	"sync"
 )
 
@@ -20,14 +19,14 @@ func (h *URLMemoryRepository) FindByID(id string) (string, error) {
 	if val, ok := h.storage[id]; ok {
 		return val, nil
 	}
-	return "", errors.New("url not found")
+	return "", ErrNotFound
 }
 
 func (h *URLMemoryRepository) Save(id, url string) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	if _, exists := h.storage[id]; exists {
-		return errors.New("code collision")
+		return ErrCollision
 	}
 	h.storage[id] = url
 	return nil

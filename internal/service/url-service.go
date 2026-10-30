@@ -16,7 +16,7 @@ func NewURLService(repo model.URLRepository) *URLService {
 	return &URLService{repo}
 }
 
-func (s *URLService) GetShorURL(originalURL string) (string, error) {
+func (s *URLService) GetShortURL(originalURL string) (string, error) {
 	for range 10 {
 		short, err := GenerateString(8)
 		if err != nil {
@@ -27,7 +27,7 @@ func (s *URLService) GetShorURL(originalURL string) (string, error) {
 			return short, nil
 		}
 	}
-	return "", errors.New("internal error")
+	return "", ErrInternal
 }
 
 func (s *URLService) GetOriginalURL(shortURL string) (string, error) {
@@ -39,7 +39,7 @@ const codeAlphabet = "23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
 
 func GenerateString(length int) (string, error) {
 	if length <= 0 {
-		return "", errors.New("n must be > 0")
+		return "", errors.New("length must be > 0")
 	}
 
 	alphabetLen := big.NewInt(int64(len(codeAlphabet)))

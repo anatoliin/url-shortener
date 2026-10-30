@@ -33,7 +33,7 @@ func (h *URLPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shorURL, err := h.urlService.GetShorURL(rawURL)
+	shorURL, err := h.urlService.GetShortURL(rawURL)
 	if err != nil {
 		http.Error(w, "", http.StatusBadRequest)
 		return
