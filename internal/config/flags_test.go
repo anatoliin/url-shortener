@@ -1,6 +1,8 @@
 package config
 
 import (
+	"flag"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -65,4 +67,72 @@ func TestBaseURL_DefaultConstant(t *testing.T) {
 	var b baseURL
 	require.NoError(t, b.Set(defaultBaseURL))
 	assert.Equal(t, defaultBaseURL, b.String())
+}
+
+func TestInitOptions(t *testing.T) {
+	tests := []struct {
+		name        string
+		args        []string
+		serverAddr  string
+		baseURL     string
+		wantAddress string
+		wantBaseURL string
+	}{
+		{
+			name:        "defaults",
+			wantAddress: ":8080",
+			wantBaseURL: defaultBaseURL,
+		},
+		{
+			name:        "command line flags",
+			args:        []string{"-a", ":9090", "-b", "https://example.com/short"},
+			wantAddress: ":9090",
+			wantBaseURL: "https://example.com/short",
+		},
+		{
+			name:        "environment variables",
+			serverAddr:  ":7070",
+			baseURL:     "https://env.example.com",
+			wantAddress: ":7070",
+			wantBaseURL: "https://env.example.com",
+		},
+		{
+			name:        "server address environment variable only",
+			serverAddr:  ":7070",
+			wantAddress: ":7070",
+			wantBaseURL: defaultBaseURL,
+		},
+		{
+			name:        "base URL environment variable only",
+			baseURL:     "https://env.example.com",
+			wantAddress: ":8080",
+			wantBaseURL: "https://env.example.com",
+		},
+		{
+			name:        "environment variables override flags",
+			args:        []string{"-a", ":9090", "-b", "https://flag.example.com"},
+			serverAddr:  ":7070",
+			baseURL:     "https://env.example.com",
+			wantAddress: ":7070",
+			wantBaseURL: "https://env.example.com",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oldCommandLine, oldArgs := flag.CommandLine, os.Args
+			flag.CommandLine = flag.NewFlagSet("test", flag.ContinueOnError)
+			os.Args = append([]string{"test"}, tt.args...)
+			t.Cleanup(func() {
+				flag.CommandLine = oldCommandLine
+				os.Args = oldArgs
+			})
+
+			t.Setenv("SERVER_ADDRESS", tt.serverAddr)
+			t.Setenv("BASE_URL", tt.baseURL)
+
+			got := InitOptions()
+			assert.Equal(t, tt.wantAddress, got.RunAddress)
+			assert.Equal(t, tt.wantBaseURL, got.RedirectPrefix.String())
+		})
+	}
 }
