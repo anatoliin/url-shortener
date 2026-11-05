@@ -32,7 +32,7 @@ func TestLogger(t *testing.T) {
 
 	var event map[string]any
 	require.NoError(t, json.Unmarshal(output.Bytes(), &event))
-	require.Equal(t, "/short", event["path"])
+	require.Equal(t, "/short", event["uri"])
 	require.Equal(t, http.MethodPost, event["method"])
 	require.Equal(t, float64(http.StatusCreated), event["status_code"])
 	require.Equal(t, float64(len("created")), event["bytes_out"])

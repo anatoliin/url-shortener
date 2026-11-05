@@ -20,7 +20,7 @@ func Logger(logger zerolog.Logger) func(next http.Handler) http.Handler {
 					ww.WriteHeader(http.StatusInternalServerError)
 				}
 				logger.Info().Fields(map[string]any{
-					"path":        r.URL.Path,
+					"uri":         r.RequestURI,
 					"method":      r.Method,
 					"status_code": ww.Status(),
 					"bytes_out":   ww.BytesWritten(),
