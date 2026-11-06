@@ -61,8 +61,6 @@ func (h *URLShortenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusCreated)
 	respObject := ShortenResponse{
 		Result: result,
 	}
@@ -72,5 +70,7 @@ func (h *URLShortenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	_, _ = w.Write(resp)
 }

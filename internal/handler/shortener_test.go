@@ -32,7 +32,7 @@ func TestURLShortenHandler_ServeHTTP(t *testing.T) {
 			body: `{"url":"https://google.com"}`,
 			want: want{
 				statusCode:   http.StatusCreated,
-				contentType:  "text/plain",
+				contentType:  "application/json",
 				checkContent: true,
 			},
 		},
@@ -42,7 +42,7 @@ func TestURLShortenHandler_ServeHTTP(t *testing.T) {
 			body: `{"url":"http://google.com"}`,
 			want: want{
 				statusCode:   http.StatusCreated,
-				contentType:  "text/plain",
+				contentType:  "application/json",
 				checkContent: true,
 			},
 		},
@@ -100,7 +100,7 @@ func TestURLShortenHandler_ServeHTTP(t *testing.T) {
 			body: `{"url":"https://google.com/search?q=1"}`,
 			want: want{
 				statusCode:   http.StatusCreated,
-				contentType:  "text/plain",
+				contentType:  "application/json",
 				checkContent: true,
 			},
 		},
