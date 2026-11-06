@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"net/url"
+
+	"github.com/caarlos0/env/v11"
 )
 
 const defaultBaseURL = "http://localhost:8080"
@@ -26,13 +28,17 @@ func (b *baseURL) Set(flagValue string) error {
 	return nil
 }
 
+func (b *baseURL) UnmarshalText(text []byte) error {
+	return b.Set(string(text))
+}
+
 func (b *baseURL) URL() *url.URL {
 	return (*url.URL)(b)
 }
 
 type Options struct {
-	RunAddress     string
-	RedirectPrefix baseURL
+	RunAddress     string  `env:"SERVER_ADDRESS"`
+	RedirectPrefix baseURL `env:"BASE_URL"`
 }
 
 func InitOptions() Options {
@@ -44,5 +50,8 @@ func InitOptions() Options {
 	}
 	flag.Var(&options.RedirectPrefix, "b", "base address for short URLs")
 	flag.Parse()
+
+	_ = env.Parse(options)
+
 	return *options
 }
