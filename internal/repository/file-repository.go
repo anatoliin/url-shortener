@@ -35,7 +35,7 @@ func NewURLFileRepository(filename string) (*URLFileRepository, error) {
 
 	storage := make(map[string]string, len(dataItems))
 	for _, item := range dataItems {
-		storage[item.ShortUrl] = item.OriginalURL
+		storage[item.ShortURL] = item.OriginalURL
 	}
 
 	return &URLFileRepository{
@@ -50,10 +50,10 @@ func (h *URLFileRepository) Close() error {
 
 	dataItems := make([]model.URL, 0, len(h.URLMemoryRepository.storage))
 	i := 1
-	for shortUrl, originalURL := range h.URLMemoryRepository.storage {
+	for shortURL, originalURL := range h.URLMemoryRepository.storage {
 		dataItems = append(dataItems, model.URL{
 			ID:          strconv.Itoa(i),
-			ShortUrl:    shortUrl,
+			ShortURL:    shortURL,
 			OriginalURL: originalURL,
 		})
 		i++
