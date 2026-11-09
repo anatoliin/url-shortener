@@ -5,14 +5,12 @@ import (
 	"io"
 	"os"
 	"strconv"
-	"sync"
 
 	"github.com/anatoliin/url-shortener/internal/model"
 )
 
 type URLFileRepository struct {
-	mu       sync.RWMutex
-	storage  map[string]string
+	*URLMemoryRepository
 	filename string
 }
 
@@ -40,41 +38,25 @@ func NewURLFileRepository(filename string) (*URLFileRepository, error) {
 		storage[item.ShortUrl] = item.OriginalURL
 	}
 
-	return &URLFileRepository{storage: storage, filename: filename}, nil
-}
-
-func (h *URLFileRepository) FindByID(id string) (string, error) {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
-	if val, ok := h.storage[id]; ok {
-		return val, nil
-	}
-	return "", ErrNotFound
-}
-
-func (h *URLFileRepository) Save(id, url string) error {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-	if _, exists := h.storage[id]; exists {
-		return ErrCollision
-	}
-	h.storage[id] = url
-	return nil
+	return &URLFileRepository{
+		URLMemoryRepository: NewURLMemoryRepository(storage),
+		filename:            filename,
+	}, nil
 }
 
 func (h *URLFileRepository) Close() error {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+	h.URLMemoryRepository.mu.RLock()
+	defer h.URLMemoryRepository.mu.RUnlock()
 
-	dataItems := make([]model.URL, 0, len(h.storage))
-	for id, originalURL := range h.storage {
+	dataItems := make([]model.URL, 0, len(h.URLMemoryRepository.storage))
+	i := 1
+	for shortUrl, originalURL := range h.URLMemoryRepository.storage {
 		dataItems = append(dataItems, model.URL{
-			ShortUrl:    id,
+			ID:          strconv.Itoa(i),
+			ShortUrl:    shortUrl,
 			OriginalURL: originalURL,
 		})
-	}
-	for i := range dataItems {
-		dataItems[i].ID = strconv.Itoa(i + 1)
+		i++
 	}
 
 	data, err := json.Marshal(dataItems)
