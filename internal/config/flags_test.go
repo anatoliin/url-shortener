@@ -71,50 +71,67 @@ func TestBaseURL_DefaultConstant(t *testing.T) {
 
 func TestInitOptions(t *testing.T) {
 	tests := []struct {
-		name        string
-		args        []string
-		serverAddr  string
-		baseURL     string
-		wantAddress string
-		wantBaseURL string
+		name                string
+		args                []string
+		serverAddr          string
+		fileStoragePath     string
+		baseURL             string
+		wantAddress         string
+		wantFileStoragePath string
+		wantBaseURL         string
 	}{
 		{
-			name:        "defaults",
-			wantAddress: ":8080",
-			wantBaseURL: defaultBaseURL,
+			name:                "defaults",
+			wantAddress:         ":8080",
+			wantFileStoragePath: "data.json",
+			wantBaseURL:         defaultBaseURL,
 		},
 		{
-			name:        "command line flags",
-			args:        []string{"-a", ":9090", "-b", "https://example.com/short"},
-			wantAddress: ":9090",
-			wantBaseURL: "https://example.com/short",
+			name:                "command line flags",
+			args:                []string{"-a", ":9090", "-f", "urls.json", "-b", "https://example.com/short"},
+			wantAddress:         ":9090",
+			wantFileStoragePath: "urls.json",
+			wantBaseURL:         "https://example.com/short",
 		},
 		{
-			name:        "environment variables",
-			serverAddr:  ":7070",
-			baseURL:     "https://env.example.com",
-			wantAddress: ":7070",
-			wantBaseURL: "https://env.example.com",
+			name:                "environment variables",
+			serverAddr:          ":7070",
+			fileStoragePath:     "env-urls.json",
+			baseURL:             "https://env.example.com",
+			wantAddress:         ":7070",
+			wantFileStoragePath: "env-urls.json",
+			wantBaseURL:         "https://env.example.com",
 		},
 		{
-			name:        "server address environment variable only",
-			serverAddr:  ":7070",
-			wantAddress: ":7070",
-			wantBaseURL: defaultBaseURL,
+			name:                "server address environment variable only",
+			serverAddr:          ":7070",
+			wantAddress:         ":7070",
+			wantFileStoragePath: "data.json",
+			wantBaseURL:         defaultBaseURL,
 		},
 		{
-			name:        "base URL environment variable only",
-			baseURL:     "https://env.example.com",
-			wantAddress: ":8080",
-			wantBaseURL: "https://env.example.com",
+			name:                "base URL environment variable only",
+			baseURL:             "https://env.example.com",
+			wantAddress:         ":8080",
+			wantFileStoragePath: "data.json",
+			wantBaseURL:         "https://env.example.com",
 		},
 		{
-			name:        "environment variables override flags",
-			args:        []string{"-a", ":9090", "-b", "https://flag.example.com"},
-			serverAddr:  ":7070",
-			baseURL:     "https://env.example.com",
-			wantAddress: ":7070",
-			wantBaseURL: "https://env.example.com",
+			name:                "file storage path environment variable only",
+			fileStoragePath:     "env-only.json",
+			wantAddress:         ":8080",
+			wantFileStoragePath: "env-only.json",
+			wantBaseURL:         defaultBaseURL,
+		},
+		{
+			name:                "environment variables override flags",
+			args:                []string{"-a", ":9090", "-f", "flag-urls.json", "-b", "https://flag.example.com"},
+			serverAddr:          ":7070",
+			fileStoragePath:     "env-urls.json",
+			baseURL:             "https://env.example.com",
+			wantAddress:         ":7070",
+			wantFileStoragePath: "env-urls.json",
+			wantBaseURL:         "https://env.example.com",
 		},
 	}
 	for _, tt := range tests {
@@ -128,10 +145,12 @@ func TestInitOptions(t *testing.T) {
 			})
 
 			t.Setenv("SERVER_ADDRESS", tt.serverAddr)
+			t.Setenv("FILE_STORAGE_PATH", tt.fileStoragePath)
 			t.Setenv("BASE_URL", tt.baseURL)
 
 			got := InitOptions()
 			assert.Equal(t, tt.wantAddress, got.RunAddress)
+			assert.Equal(t, tt.wantFileStoragePath, got.FileStoragePath)
 			assert.Equal(t, tt.wantBaseURL, got.RedirectPrefix.String())
 		})
 	}

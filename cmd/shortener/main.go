@@ -9,9 +9,12 @@ import (
 
 func main() {
 	options := config.InitOptions()
-	r := router.NewRouter(options.RedirectPrefix.URL())
+	r, err := router.NewRouter(options.RedirectPrefix.URL(), options.FileStoragePath)
+	if err != nil {
+		panic(err)
+	}
 
-	err := http.ListenAndServe(options.RunAddress, r)
+	err = http.ListenAndServe(options.RunAddress, r)
 	if err != nil {
 		panic(err)
 	}
