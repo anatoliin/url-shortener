@@ -16,6 +16,7 @@ func NewRouter(redirectURL *url.URL, path string) (http.Handler, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer repo.Close()
 	urlService := service.NewURLService(repo)
 	r := chi.NewRouter()
 	r.Use(Logger(log.Logger), GzipMiddleware)
