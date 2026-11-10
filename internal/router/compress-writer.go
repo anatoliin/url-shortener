@@ -23,7 +23,12 @@ func (c *compressWriter) Header() http.Header {
 }
 
 func (c *compressWriter) Write(p []byte) (int, error) {
-	return c.zw.Write(p)
+	contentType := c.w.Header().Get("Content-Type")
+	contentZippable := strings.Contains(contentType, "text/html") || strings.Contains(contentType, "application/json")
+	if contentZippable {
+		return c.zw.Write(p)
+	}
+	return c.w.Write(p)
 }
 
 func (c *compressWriter) WriteHeader(statusCode int) {
