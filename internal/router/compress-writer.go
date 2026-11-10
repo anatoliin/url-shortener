@@ -3,6 +3,7 @@ package router
 import (
 	"compress/gzip"
 	"net/http"
+	"strings"
 )
 
 type compressWriter struct {
@@ -26,7 +27,9 @@ func (c *compressWriter) Write(p []byte) (int, error) {
 }
 
 func (c *compressWriter) WriteHeader(statusCode int) {
-	if statusCode < 300 {
+	contentType := c.w.Header().Get("Content-Type")
+	contentZippable := strings.Contains(contentType, "text/html") || strings.Contains(contentType, "application/json")
+	if contentZippable && statusCode < 300 {
 		c.w.Header().Set("Content-Encoding", "gzip")
 	}
 	c.w.WriteHeader(statusCode)

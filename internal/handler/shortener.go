@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/anatoliin/url-shortener/internal/repository"
 	"github.com/anatoliin/url-shortener/internal/service"
 )
 
@@ -32,7 +33,7 @@ const maxBodySize = 2048
 func shortenURL(urlService *service.URLService, redirectURL *url.URL, rawURL string) (string, error) {
 	parsed, err := url.ParseRequestURI(rawURL)
 	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
-		return "", errors.New("invalid URL")
+		return "", ErrInvalidURL
 	}
 
 	shortURL, err := urlService.GetShortURL(rawURL)
@@ -57,7 +58,11 @@ func (h *URLShortenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	result, err := shortenURL(h.urlService, h.redirectURL, req.URL)
 	if err != nil {
-		http.Error(w, "", http.StatusBadRequest)
+		if errors.Is(err, repository.ErrCollision) || errors.Is(err, ErrInvalidURL) {
+			http.Error(w, "", http.StatusBadRequest)
+		} else {
+			http.Error(w, "", http.StatusInternalServerError)
+		}
 		return
 	}
 

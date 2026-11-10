@@ -78,6 +78,9 @@ func TestGzipMiddleware(t *testing.T) {
 				body, err := io.ReadAll(r.Body)
 				require.NoError(t, err)
 				receivedRequestBody = string(body)
+				if tt.wantResponseGzip {
+					w.Header().Set("Content-Type", "text/html")
+				}
 				w.WriteHeader(tt.responseStatus)
 				_, err = w.Write([]byte(tt.responseBody))
 				require.NoError(t, err)

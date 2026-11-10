@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -148,7 +149,7 @@ func TestInitOptions(t *testing.T) {
 			t.Setenv("FILE_STORAGE_PATH", tt.fileStoragePath)
 			t.Setenv("BASE_URL", tt.baseURL)
 
-			got := InitOptions()
+			got := InitOptions(zerolog.Nop())
 			assert.Equal(t, tt.wantAddress, got.RunAddress)
 			assert.Equal(t, tt.wantFileStoragePath, got.FileStoragePath)
 			assert.Equal(t, tt.wantBaseURL, got.RedirectPrefix.String())
