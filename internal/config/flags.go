@@ -4,6 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"net/url"
+	"os"
+
+	"github.com/caarlos0/env/v11"
+	"github.com/rs/zerolog"
 )
 
 const defaultBaseURL = "http://localhost:8080"
@@ -26,23 +30,37 @@ func (b *baseURL) Set(flagValue string) error {
 	return nil
 }
 
+func (b *baseURL) UnmarshalText(text []byte) error {
+	return b.Set(string(text))
+}
+
 func (b *baseURL) URL() *url.URL {
 	return (*url.URL)(b)
 }
 
 type Options struct {
-	RunAddress     string
-	RedirectPrefix baseURL
+	RunAddress      string  `env:"SERVER_ADDRESS"`
+	FileStoragePath string  `env:"FILE_STORAGE_PATH"`
+	RedirectPrefix  baseURL `env:"BASE_URL"`
 }
 
-func InitOptions() Options {
+func InitOptions(logger zerolog.Logger) Options {
 	options := new(Options)
 	flag.StringVar(&options.RunAddress, "a", ":8080", "address and port to run server")
+	flag.StringVar(&options.FileStoragePath, "f", "data.json", "file storage path")
 
 	if err := options.RedirectPrefix.Set(defaultBaseURL); err != nil {
-		panic(err)
+		logger.Fatal().Err(err).Msg("failed to set redirect prefix")
 	}
+
 	flag.Var(&options.RedirectPrefix, "b", "base address for short URLs")
-	flag.Parse()
+	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
+		logger.Fatal().Err(err).Msg("failed to parse flags")
+	}
+
+	if err := env.Parse(options); err != nil {
+		logger.Fatal().Err(err).Msg("failed to parse environment variables")
+	}
+
 	return *options
 }
