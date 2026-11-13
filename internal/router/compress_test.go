@@ -20,29 +20,41 @@ func TestGzipMiddleware(t *testing.T) {
 	require.NoError(t, writer.Close())
 
 	tests := []struct {
-		name             string
-		acceptEncoding   string
-		contentEncoding  string
-		requestBody      []byte
-		responseStatus   int
-		responseBody     string
-		wantStatus       int
-		wantEncoding     string
-		wantResponseBody string
-		wantRequestBody  string
-		wantHandlerCall  bool
-		wantResponseGzip bool
+		name                string
+		acceptEncoding      string
+		contentEncoding     string
+		requestBody         []byte
+		responseStatus      int
+		responseContentType string
+		responseBody        string
+		wantStatus          int
+		wantEncoding        string
+		wantResponseBody    string
+		wantRequestBody     string
+		wantHandlerCall     bool
+		wantResponseGzip    bool
 	}{
 		{
-			name:             "compresses accepted response",
-			acceptEncoding:   "gzip",
-			responseStatus:   http.StatusCreated,
-			responseBody:     "compressed response",
-			wantStatus:       http.StatusCreated,
-			wantEncoding:     "gzip",
-			wantResponseBody: "compressed response",
-			wantHandlerCall:  true,
-			wantResponseGzip: true,
+			name:                "compresses accepted response",
+			acceptEncoding:      "gzip",
+			responseStatus:      http.StatusCreated,
+			responseContentType: "text/html",
+			responseBody:        "compressed response",
+			wantStatus:          http.StatusCreated,
+			wantEncoding:        "gzip",
+			wantResponseBody:    "compressed response",
+			wantHandlerCall:     true,
+			wantResponseGzip:    true,
+		},
+		{
+			name:                "does not append gzip data to plain response",
+			acceptEncoding:      "gzip",
+			responseStatus:      http.StatusCreated,
+			responseContentType: "text/plain",
+			responseBody:        "http://localhost:8080/kJJrauYx",
+			wantStatus:          http.StatusCreated,
+			wantResponseBody:    "http://localhost:8080/kJJrauYx",
+			wantHandlerCall:     true,
 		},
 		{
 			name:             "does not compress unaccepted response",
@@ -78,8 +90,8 @@ func TestGzipMiddleware(t *testing.T) {
 				body, err := io.ReadAll(r.Body)
 				require.NoError(t, err)
 				receivedRequestBody = string(body)
-				if tt.wantResponseGzip {
-					w.Header().Set("Content-Type", "text/html")
+				if tt.responseContentType != "" {
+					w.Header().Set("Content-Type", tt.responseContentType)
 				}
 				w.WriteHeader(tt.responseStatus)
 				_, err = w.Write([]byte(tt.responseBody))
