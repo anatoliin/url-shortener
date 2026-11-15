@@ -92,7 +92,6 @@ func TestURLFileRepository_CloseWritesCurrentData(t *testing.T) {
 			repo, err := NewURLFileRepository(filename)
 			require.NoError(t, err)
 			require.NoError(t, repo.Save(tt.id, tt.originalURL))
-			require.NoError(t, repo.Close())
 
 			data, err := os.ReadFile(filename)
 			require.NoError(t, err)

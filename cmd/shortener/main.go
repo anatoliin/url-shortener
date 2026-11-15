@@ -12,11 +12,10 @@ import (
 func main() {
 	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
 	options := config.InitOptions(logger)
-	r, repo, err := router.NewRouter(options.RedirectPrefix.URL(), options.FileStoragePath, logger)
+	r, err := router.NewRouter(options.RedirectPrefix.URL(), options.FileStoragePath, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("unable to create router")
 	}
-	defer repo.Close()
 
 	err = http.ListenAndServe(options.RunAddress, r)
 	if err != nil {

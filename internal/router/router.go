@@ -11,14 +11,10 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type Closable interface {
-	Close() error
-}
-
-func NewRouter(redirectURL *url.URL, path string, logger zerolog.Logger) (http.Handler, Closable, error) {
+func NewRouter(redirectURL *url.URL, path string, logger zerolog.Logger) (http.Handler, error) {
 	repo, err := repository.NewURLFileRepository(path)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	urlService := service.NewURLService(repo)
 	r := chi.NewRouter()
@@ -26,5 +22,5 @@ func NewRouter(redirectURL *url.URL, path string, logger zerolog.Logger) (http.H
 	r.Method(http.MethodPost, "/", handler.NewURLPostHandler(urlService, redirectURL))
 	r.Method(http.MethodPost, "/api/shorten", handler.NewURLShortenHandle(urlService, redirectURL))
 	r.Method(http.MethodGet, "/{id}", handler.NewURLGetHandler(urlService))
-	return r, repo, nil
+	return r, nil
 }

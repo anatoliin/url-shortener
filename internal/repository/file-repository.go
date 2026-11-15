@@ -44,10 +44,23 @@ func NewURLFileRepository(filename string) (*URLFileRepository, error) {
 	}, nil
 }
 
-func (h *URLFileRepository) Close() error {
-	h.URLMemoryRepository.mu.RLock()
-	defer h.URLMemoryRepository.mu.RUnlock()
+func (h *URLFileRepository) Save(id, url string) error {
+	h.URLMemoryRepository.mu.Lock()
+	defer h.URLMemoryRepository.mu.Unlock()
 
+	if _, exists := h.URLMemoryRepository.storage[id]; exists {
+		return ErrCollision
+	}
+
+	h.URLMemoryRepository.storage[id] = url
+	if err := h.writeStorageLocked(); err != nil {
+		delete(h.URLMemoryRepository.storage, id)
+		return err
+	}
+	return nil
+}
+
+func (h *URLFileRepository) writeStorageLocked() error {
 	dataItems := make([]model.URL, 0, len(h.URLMemoryRepository.storage))
 	i := 1
 	for shortURL, originalURL := range h.URLMemoryRepository.storage {
