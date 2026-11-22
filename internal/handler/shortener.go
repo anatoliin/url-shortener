@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/anatoliin/url-shortener/internal/repository"
 	"github.com/anatoliin/url-shortener/internal/service"
 )
 
@@ -58,7 +57,7 @@ func (h *URLShortenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	result, err := shortenURL(h.urlService, h.redirectURL, req.URL)
 	if err != nil {
-		if errors.Is(err, repository.ErrCollision) || errors.Is(err, ErrInvalidURL) {
+		if errors.Is(err, ErrInvalidURL) {
 			http.Error(w, "", http.StatusBadRequest)
 		} else {
 			http.Error(w, "", http.StatusInternalServerError)

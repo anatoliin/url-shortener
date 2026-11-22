@@ -126,3 +126,36 @@ func TestGzipMiddleware(t *testing.T) {
 		})
 	}
 }
+
+func TestCompressWriterWritesHeaderImplicitly(t *testing.T) {
+	response := httptest.NewRecorder()
+	writer := newCompressWriter(response)
+	writer.Header().Set("Content-Type", "application/json")
+
+	_, err := writer.Write([]byte(`{"result":"ok"}`))
+	require.NoError(t, err)
+	require.NoError(t, writer.Close())
+
+	require.Equal(t, "gzip", response.Header().Get("Content-Encoding"))
+	reader, err := gzip.NewReader(response.Body)
+	require.NoError(t, err)
+	defer reader.Close()
+
+	body, err := io.ReadAll(reader)
+	require.NoError(t, err)
+	require.JSONEq(t, `{"result":"ok"}`, string(body))
+}
+
+func TestCompressWriterDoesNotCompressExplicitErrorStatus(t *testing.T) {
+	response := httptest.NewRecorder()
+	writer := newCompressWriter(response)
+	writer.Header().Set("Content-Type", "application/json")
+
+	writer.WriteHeader(http.StatusNotFound)
+	_, err := writer.Write([]byte(`{"error":"not found"}`))
+	require.NoError(t, err)
+	require.NoError(t, writer.Close())
+
+	require.Empty(t, response.Header().Get("Content-Encoding"))
+	require.JSONEq(t, `{"error":"not found"}`, response.Body.String())
+}

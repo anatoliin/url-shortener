@@ -7,8 +7,9 @@ import (
 )
 
 type compressWriter struct {
-	w  http.ResponseWriter
-	zw *gzip.Writer
+	w           http.ResponseWriter
+	zw          *gzip.Writer
+	wroteHeader bool
 }
 
 func newCompressWriter(w http.ResponseWriter) *compressWriter {
@@ -22,24 +23,35 @@ func (c *compressWriter) Header() http.Header {
 }
 
 func (c *compressWriter) Write(p []byte) (int, error) {
-	contentType := c.w.Header().Get("Content-Type")
-	contentZippable := strings.Contains(contentType, "text/html") || strings.Contains(contentType, "application/json")
-	if contentZippable {
-		if c.zw == nil {
-			c.zw = gzip.NewWriter(c.w)
-		}
-		return c.zw.Write(p)
+	if c.zw == nil && !c.wroteHeader {
+		c.startCompression(http.StatusOK)
 	}
-	return c.w.Write(p)
+	if c.zw == nil {
+		return c.w.Write(p)
+	}
+	return c.zw.Write(p)
 }
 
 func (c *compressWriter) WriteHeader(statusCode int) {
-	contentType := c.w.Header().Get("Content-Type")
-	contentZippable := strings.Contains(contentType, "text/html") || strings.Contains(contentType, "application/json")
-	if contentZippable && statusCode < 300 {
-		c.w.Header().Set("Content-Encoding", "gzip")
+	if c.wroteHeader {
+		return
 	}
+	c.wroteHeader = true
+	c.startCompression(statusCode)
 	c.w.WriteHeader(statusCode)
+}
+
+func (c *compressWriter) startCompression(statusCode int) {
+	if c.zw != nil || statusCode >= 300 || !c.contentZippable() {
+		return
+	}
+	c.zw = gzip.NewWriter(c.w)
+	c.w.Header().Set("Content-Encoding", "gzip")
+}
+
+func (c *compressWriter) contentZippable() bool {
+	contentType := c.w.Header().Get("Content-Type")
+	return strings.Contains(contentType, "text/html") || strings.Contains(contentType, "application/json")
 }
 
 func (c *compressWriter) Close() error {
