@@ -17,8 +17,6 @@ func NewURLPostHandler(service *service.URLService, redirectAddress *url.URL) *U
 	return &URLPostHandler{service, redirectAddress}
 }
 
-const maxBodySize = 2048
-
 func (h *URLPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(io.LimitReader(r.Body, maxBodySize+1))
 	if err != nil || len(body) > maxBodySize {
@@ -27,20 +25,12 @@ func (h *URLPostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	rawURL := string(body)
 
-	parsed, err := url.ParseRequestURI(rawURL)
-	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
-		http.Error(w, "", http.StatusBadRequest)
-		return
-	}
-
-	shorURL, err := h.urlService.GetShortURL(rawURL)
+	result, err := shortenURL(h.urlService, h.redirectURL, rawURL)
 	if err != nil {
 		http.Error(w, "", http.StatusBadRequest)
 		return
 	}
-
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	result := h.redirectURL.JoinPath(shorURL)
-	_, _ = w.Write([]byte(result.String()))
+	_, _ = w.Write([]byte(result))
 }
