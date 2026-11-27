@@ -77,31 +77,37 @@ func TestInitOptions(t *testing.T) {
 		serverAddr          string
 		fileStoragePath     string
 		baseURL             string
+		databaseDSN         string
 		wantAddress         string
 		wantFileStoragePath string
 		wantBaseURL         string
+		wantDatabaseDSN     string
 	}{
 		{
 			name:                "defaults",
 			wantAddress:         ":8080",
 			wantFileStoragePath: "data.json",
 			wantBaseURL:         defaultBaseURL,
+			wantDatabaseDSN:     "postgres://postgres:postgres@localhost:5432/postgres",
 		},
 		{
 			name:                "command line flags",
-			args:                []string{"-a", ":9090", "-f", "urls.json", "-b", "https://example.com/short"},
+			args:                []string{"-a", ":9090", "-f", "urls.json", "-b", "https://example.com/short", "-d", "postgres://flag-db"},
 			wantAddress:         ":9090",
 			wantFileStoragePath: "urls.json",
 			wantBaseURL:         "https://example.com/short",
+			wantDatabaseDSN:     "postgres://flag-db",
 		},
 		{
 			name:                "environment variables",
 			serverAddr:          ":7070",
 			fileStoragePath:     "env-urls.json",
 			baseURL:             "https://env.example.com",
+			databaseDSN:         "postgres://env-db",
 			wantAddress:         ":7070",
 			wantFileStoragePath: "env-urls.json",
 			wantBaseURL:         "https://env.example.com",
+			wantDatabaseDSN:     "postgres://env-db",
 		},
 		{
 			name:                "server address environment variable only",
@@ -109,6 +115,7 @@ func TestInitOptions(t *testing.T) {
 			wantAddress:         ":7070",
 			wantFileStoragePath: "data.json",
 			wantBaseURL:         defaultBaseURL,
+			wantDatabaseDSN:     "postgres://postgres:postgres@localhost:5432/postgres",
 		},
 		{
 			name:                "base URL environment variable only",
@@ -116,6 +123,7 @@ func TestInitOptions(t *testing.T) {
 			wantAddress:         ":8080",
 			wantFileStoragePath: "data.json",
 			wantBaseURL:         "https://env.example.com",
+			wantDatabaseDSN:     "postgres://postgres:postgres@localhost:5432/postgres",
 		},
 		{
 			name:                "file storage path environment variable only",
@@ -123,16 +131,27 @@ func TestInitOptions(t *testing.T) {
 			wantAddress:         ":8080",
 			wantFileStoragePath: "env-only.json",
 			wantBaseURL:         defaultBaseURL,
+			wantDatabaseDSN:     "postgres://postgres:postgres@localhost:5432/postgres",
+		},
+		{
+			name:                "database DSN environment variable only",
+			databaseDSN:         "postgres://env-only-db",
+			wantAddress:         ":8080",
+			wantFileStoragePath: "data.json",
+			wantBaseURL:         defaultBaseURL,
+			wantDatabaseDSN:     "postgres://env-only-db",
 		},
 		{
 			name:                "environment variables override flags",
-			args:                []string{"-a", ":9090", "-f", "flag-urls.json", "-b", "https://flag.example.com"},
+			args:                []string{"-a", ":9090", "-f", "flag-urls.json", "-b", "https://flag.example.com", "-d", "postgres://flag-db"},
 			serverAddr:          ":7070",
 			fileStoragePath:     "env-urls.json",
 			baseURL:             "https://env.example.com",
+			databaseDSN:         "postgres://env-db",
 			wantAddress:         ":7070",
 			wantFileStoragePath: "env-urls.json",
 			wantBaseURL:         "https://env.example.com",
+			wantDatabaseDSN:     "postgres://env-db",
 		},
 	}
 	for _, tt := range tests {
@@ -148,11 +167,13 @@ func TestInitOptions(t *testing.T) {
 			t.Setenv("SERVER_ADDRESS", tt.serverAddr)
 			t.Setenv("FILE_STORAGE_PATH", tt.fileStoragePath)
 			t.Setenv("BASE_URL", tt.baseURL)
+			t.Setenv("DATABASE_DSN", tt.databaseDSN)
 
 			got := InitOptions(zerolog.Nop())
 			assert.Equal(t, tt.wantAddress, got.RunAddress)
 			assert.Equal(t, tt.wantFileStoragePath, got.FileStoragePath)
 			assert.Equal(t, tt.wantBaseURL, got.RedirectPrefix.String())
+			assert.Equal(t, tt.wantDatabaseDSN, got.DatabaseDSN)
 		})
 	}
 }
