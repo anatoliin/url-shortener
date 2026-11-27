@@ -49,7 +49,7 @@ func InitOptions(logger zerolog.Logger) Options {
 	options := new(Options)
 	flag.StringVar(&options.RunAddress, "a", ":8080", "address and port to run server")
 	flag.StringVar(&options.FileStoragePath, "f", "data.json", "file storage path")
-	flag.StringVar(&options.DatabaseDSN, "d", "postgres://postgres:postgres@localhost:5432/postgres", "database to connect to")
+	flag.StringVar(&options.DatabaseDSN, "d", "", "database to connect to")
 
 	if err := options.RedirectPrefix.Set(defaultBaseURL); err != nil {
 		logger.Fatal().Err(err).Msg("failed to set redirect prefix")
